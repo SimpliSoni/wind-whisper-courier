@@ -1,0 +1,407 @@
+/* ==========================================================================
+       4. GRAND COURIER HUB / MENU MODAL WITH TABS & CONTROLS ACADEMY
+       ========================================================================== */
+    .modal-backdrop-full {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(31, 45, 61, 0.65);
+      backdrop-filter: blur(10px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      padding: 20px;
+    }
+
+    .modal-backdrop-full.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .journal-window {
+      background: var(--cream-parchment);
+      border: 2px solid var(--border-parchment);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      width: 100%;
+      max-width: 720px;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transform: scale(0.94) translateY(12px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-backdrop-full.open .journal-window {
+      transform: scale(1) translateY(0);
+    }
+
+    .journal-header {
+      background: linear-gradient(135deg, #FFE5D9, #FFD166);
+      padding: 16px 22px;
+      border-bottom: 1.5px solid var(--border-parchment);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .journal-header h2 {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--ink-navy);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .journal-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 8px 18px 0;
+      border-bottom: 1.5px solid var(--border-parchment);
+      background: #F8F2E8;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      padding: 8px 14px;
+      font-weight: 800;
+      font-size: 12px;
+      color: var(--ink-muted);
+      cursor: pointer;
+      border-radius: 10px 10px 0 0;
+      transition: all 0.2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .tab-btn.active {
+      background: var(--cream-parchment);
+      color: var(--terracotta-dark);
+      border: 1.5px solid var(--border-parchment);
+      border-bottom: none;
+      box-shadow: 0 -2px 6px rgba(0,0,0,0.04);
+    }
+
+    .journal-body {
+      padding: 20px 22px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-height: calc(88vh - 130px);
+    }
+
+    .close-btn-circle {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .close-btn-circle:hover {
+      transform: scale(1.1) rotate(90deg);
+    }
+
+    /* Controls Academy Layout */
+    .controls-keyboard-hero {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .key-capsules-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 8px;
+    }
+
+    .key-capsule-card {
+      background: #F8F4ED;
+      border: 1px solid var(--border-parchment);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .key-badge {
+      background: white;
+      border: 1.5px solid #D5C8B8;
+      box-shadow: 0 2px 0 #C4B5A3;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 900;
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--ink-navy);
+    }
+
+    .key-desc {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--ink-muted);
+    }
+
+    .maneuver-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .maneuver-card {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .maneuver-icon {
+      font-size: 24px;
+    }
+
+    .maneuver-info h4 {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--ink-navy);
+      margin-bottom: 2px;
+    }
+
+    .maneuver-info p {
+      font-size: 11px;
+      color: var(--ink-muted);
+      line-height: 1.35;
+    }
+
+    /* Badges & Achievements Grid */
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .badge-card {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: transform 0.2s;
+    }
+
+    .badge-card.unlocked {
+      border-color: var(--gold-sun);
+      background: #FFFDF8;
+      box-shadow: 0 4px 12px rgba(255, 209, 102, 0.2);
+    }
+
+    .badge-card.locked {
+      opacity: 0.65;
+    }
+
+    .badge-icon-box {
+      font-size: 28px;
+      width: 44px;
+      height: 44px;
+      background: #F4EBE1;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-parchment);
+    }
+
+    .badge-card.unlocked .badge-icon-box {
+      background: #FFE8D6;
+      border-color: var(--gold-sun);
+    }
+
+    .badge-details {
+      flex: 1;
+    }
+
+    .badge-title {
+      font-size: 12.5px;
+      font-weight: 900;
+      color: var(--ink-navy);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .badge-desc {
+      font-size: 10.5px;
+      color: var(--ink-muted);
+      margin-top: 2px;
+    }
+
+    .badge-reward {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--terracotta-dark);
+      background: #FFE8D6;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* Quest List Cards */
+    .quest-item-card {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quest-item-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--terracotta-sun);
+    }
+
+    .quest-item-card.current {
+      border-color: var(--terracotta-sun);
+      background: #FFF9F5;
+    }
+
+    .quest-item-card.completed {
+      opacity: 0.8;
+      background: #F4EBE1;
+    }
+
+    .sparrow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 10px;
+    }
+
+    .sparrow-card {
+      background: white;
+      border: 1.5px solid var(--border-parchment);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sparrow-card.found {
+      border-color: var(--spring-grass);
+      background: #F0FDF4;
+    }
+
+    /* Focused Clean Delivery Scorecard Modal */
+    .celeb-card {
+      background: var(--cream-parchment);
+      border: 2px solid var(--gold-sun);
+      border-radius: 28px;
+      padding: 26px 32px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 440px;
+      width: 90%;
+      transform: scale(0.92) translateY(15px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-backdrop-full.open .celeb-card {
+      transform: scale(1) translateY(0);
+    }
+
+    .scorecard-grade-badge {
+      font-size: 34px;
+      font-weight: 900;
+      color: #E76F51;
+      background: #FFE8D6;
+      border-radius: 50%;
+      width: 62px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2.5px solid var(--gold-sun);
+    }
+
+    .scorecard-breakdown {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      width: 100%;
+      margin: 2px 0;
+    }
+
+    .score-item {
+      background: #F4EBE1;
+      padding: 6px 8px;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .score-label {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+    }
+
+    .score-value {
+      font-size: 13px;
+      font-weight: 900;
+      color: var(--ink-navy);
+    }
+
+    .btn-next-mission {
+      background: linear-gradient(135deg, var(--ribbon-red), var(--terracotta-sun));
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 20px;
+      font-weight: 900;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(217, 4, 41, 0.35);
+      transition: all 0.2s;
+    }
+
+    .btn-next-mission:hover {
+      transform: translateY(-2px) scale(1.04);
+    }

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wind Whisper Courier: Ghibli Flight (風の配達便)</title>
+  
+  <!-- Modern Anime & Ghibli-inspired Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Playfair+Display:ital,wght@1,600;1,800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Modular Stylesheets -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/hud.css">
+  <link rel="stylesheet" href="css/menu.css">
+  <link rel="stylesheet" href="css/welcome.css">
+  <link rel="stylesheet" href="css/shop.css">
+</head>
+<body>
+
+  <!-- SFX-only — background music removed -->
+
+  <!-- WebGL 3D Canvas -->
+  <div id="canvas-container"></div>
+
+  <!-- Watercolor Paper Texture Overlay & Screen Atmosphere FX -->
+  <div id="watercolor-canvas-overlay"></div>
+  <div id="fp-vignette"></div>
+  <div id="boundary-mist"></div>
+  <div id="speed-lines"></div>
+  <div id="confetti-layer"></div>
+
+  <!-- Floating Achievement Badge Toast Container -->
+  <div id="badge-toast-container"></div>
+
+  <!-- Photo Mode Active Toast -->
+  <div id="photo-mode-indicator" class="interactive">
+    <span>📸 PHOTO MODE ACTIVE</span>
+    <kbd style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px;">Click anywhere or press [P] / [ESC] to Exit</kbd>
+  </div>
+
+  <!-- Streamlined Minimalist HUD Layer -->
+  <div id="ui-layer">
+    
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <!-- Left: Brand Capsule + Courier Rank -->
+      <div class="brand-group interactive">
+        <div class="brand-capsule" id="btn-brand-menu" title="Click to open Grand Courier Menu">
+          <span style="font-size: 16px;">🧹</span>
+          <h1>Wind Whisper</h1>
+        </div>
+        <div class="rank-pill" id="hud-courier-rank" title="Your Courier License Rank">
+          <span>⭐</span>
+          <span id="rank-text-val">Rank 1 Apprentice</span>
+        </div>
+      </div>
+
+      <!-- Center: Delivery Countdown Timer Capsule -->
+      <div class="delivery-timer-capsule interactive" id="prominent-delivery-timer" title="Delivery Deadline Countdown">
+        <div class="timer-ring-wrapper">
+          <svg class="timer-svg" viewBox="0 0 44 44">
+            <circle class="timer-circle-bg" cx="22" cy="22" r="18"></circle>
+            <circle class="timer-circle-progress" id="hud-timer-circle" cx="22" cy="22" r="18"></circle>
+          </svg>
+          <span class="timer-center-icon">⏳</span>
+        </div>
+        <div class="timer-digits-row">
+          <span class="timer-digits" id="prominent-timer-txt">00:50</span>
+          <span class="timer-bonus-pill" id="timer-bonus-pill">+3s</span>
+        </div>
+      </div>
+
+      <!-- Right: Currency + Sparrows + Wardrobe Shop + Consolidated Menu Button -->
+      <div class="top-stats-group">
+        <div class="stat-badge interactive" id="btn-top-stamps" title="🥖 Golden Bread Stamps — Click to open Wardrobe Shop">
+          <span>🥖</span>
+          <span id="ui-stamps">120</span>
+        </div>
+        <div class="stat-badge interactive" id="btn-top-sparrows" title="🕊️ Lost Origami Sparrows Found">
+          <span>🕊️</span>
+          <span id="ui-sparrows">0/6</span>
+        </div>
+        <div class="feather-badge stat-badge interactive" id="btn-top-feathers" title="✨ Golden Feathers — Click to get more Feathers">
+          <span>✨</span>
+          <span id="ui-feathers">0</span>
+        </div>
+
+        <!-- Dedicated Wardrobe Shop Quick Access Button -->
+        <button class="btn-top-shop interactive" id="btn-top-shop-open" title="Open Wardrobe & Cosmetics Shop (Press B)">
+          <span class="shop-icon-bounce">🛍️</span>
+          <span>Wardrobe</span>
+          <kbd class="desktop-hint">B</kbd>
+        </button>
+
+        <button class="btn-main-menu interactive" id="btn-open-main-menu" title="Open Grand Courier Menu & Controls Academy (ESC / Tab)">
+          <span>☰ Menu</span>
+          <kbd class="desktop-hint">ESC</kbd>
+        </button>
+      </div>
+    </header>
+
+    <!-- Compact Floating Quest Card (Top Right) -->
+    <aside class="quest-card interactive" id="quest-card-hud" title="Click to view Delivery Journal">
+      <div class="quest-card-top">
+        <span class="quest-tag" id="hud-quest-tag">CHAPTER 1/6</span>
+        <span class="quest-timer-tag" id="hud-quest-timer">50s</span>
+      </div>
+      <div class="quest-title-text">
+        <span id="hud-quest-icon">🥐</span>
+        <span id="hud-quest-name">Hot Morning Brioche</span>
+      </div>
+      <div class="quest-dest-row">
+        <span>➔ <span id="hud-dest-label" style="font-weight: 900;">Grand Clock Tower</span></span>
+        <span class="quest-dist-badge" id="hud-step-dist">85m</span>
+      </div>
+      <div class="quest-warmth-meter">
+        <div class="warmth-bar-bg">
+          <div class="warmth-bar-fill" id="hud-warmth-fill"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Parcel Pickup / Launch Banner -->
+    <div id="pickup-action-banner">
+      <div style="font-size: 28px;" id="pickup-banner-icon">🥐</div>
+      <h3 style="font-size: 16px; font-weight: 900; color: var(--ink-navy);" id="pickup-banner-title">Fresh Brioche Ready!</h3>
+      <p style="font-size: 12px; color: var(--ink-muted); max-width: 280px; line-height: 1.4;" id="pickup-banner-desc">
+        Osono has packed steaming brioche into Jiji's basket. Mount your broomstick!
+      </p>
+      <button class="btn-pickup-launch interactive" id="btn-mount-launch">
+        🚀 MOUNT BROOM & LAUNCH (SPACE)
+      </button>
+    </div>
+
+    <!-- Context Flight Helper Bubble -->
+    <div id="flight-helper-bubble">
+      <span>💡</span>
+      <span id="helper-text">Hold <kbd>SPACE</kbd> to Boost! Press <kbd>SHIFT</kbd> to Land!</span>
+    </div>
+
+    <!-- 360° Waypoint Compass Pin -->
+    <div id="waypoint-tracker">
+      <div class="waypoint-beacon-container">
+        <div class="waypoint-pulse-wave"></div>
+        <div class="waypoint-pin" id="waypoint-icon-box">📍</div>
+      </div>
+      <div class="waypoint-badge">
+        <span class="waypoint-arrow" id="waypoint-arrow-symbol"></span>
+        <span id="waypoint-name-txt">Grand Clock Tower</span>
+        <span style="color: var(--gold-sun); font-weight: 900;" id="waypoint-dist-txt">85m</span>
+      </div>
+    </div>
+
+    <!-- Center Stunt / Combo Announcer -->
+    <div id="stunt-announcer">BARREL ROLL! ✨</div>
+
+    <!-- World Boundary Notice -->
+    <div id="boundary-toast">
+      <span>🍃</span>
+      <span>The warm sea winds gently guide you back to Port Koriko.</span>
+    </div>
+
+    <!-- Bottom Flight HUD & Controls -->
+    <footer class="bottom-bar">
+      <div class="telemetry-group">
+        <div class="speedo-card">
+          <span class="speedo-val" id="hud-speed-val">32</span>
+          <span class="speedo-unit">KTS</span>
+          <span class="alt-val" id="hud-alt-val">ALT 45m</span>
+        </div>
+        <div class="buff-tags" id="buff-tags-box"></div>
+      </div>
+
+      <div class="actions-panel interactive">
+        <button class="action-hud-btn" id="btn-toggle-cam" title="Toggle Camera View (C)">
+          <span>🎥 View</span>
+          <kbd class="desktop-hint">C</kbd>
+        </button>
+        <button class="action-hud-btn btn-brake-skin" id="btn-airbrake" title="Airbrake & Land (Shift)">
+          <span>🛑 Land</span>
+          <kbd class="desktop-hint">SHIFT</kbd>
+        </button>
+        <button class="action-hud-btn btn-boost-skin" id="btn-propel" title="Boost Sparkle Thrust (Space)">
+          <span>✨ Boost</span>
+          <kbd class="desktop-hint">SPACE</kbd>
+        </button>
+      </div>
+    </footer>
+
+    <!-- Mobile Virtual Joystick -->
+    <div id="mobile-joystick">
+      <div id="mobile-thumb"></div>
+    </div>
+
+  </div>
+
+  <!-- Focused Delivery Scorecard Modal with Clean Backdrop -->
+  <div class="modal-backdrop-full" id="celeb-backdrop">
+    <div class="celeb-card" id="celeb-modal">
+      <div class="scorecard-grade-badge" id="celeb-grade">S</div>
+      <h2 style="font-size: 19px; font-weight: 900; color: var(--ink-navy);">Parcel Delivered!</h2>
+      <div style="font-size: 12.5px; font-weight: 800; color: var(--terracotta-sun);" id="celeb-dest-name">Delivered to Clocktower Master</div>
+      <p style="font-family: 'Playfair Display', serif; font-style: italic; font-size: 12.5px; color: var(--ink-muted); line-height: 1.4;" id="celeb-quote-msg">
+        "Ah, still steaming hot and crisp! The wind truly brought a blessing today."
+      </p>
+
+      <!-- Performance Breakdown -->
+      <div class="scorecard-breakdown">
+        <div class="score-item">
+          <span class="score-label">Time Left</span>
+          <span class="score-value" id="score-time-val">28s</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Freshness</span>
+          <span class="score-value" id="score-warmth-val">95%</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Rings / Stunts</span>
+          <span class="score-value" id="score-bonus-val">6x</span>
+        </div>
+      </div>
+
+      <div style="background: #FFE8D6; color: var(--terracotta-dark); font-weight: 900; font-size: 14px; padding: 6px 20px; border-radius: 14px; margin-top: 4px;" id="celeb-reward-txt">
+        +70 Golden Bread Stamps 🥖
+      </div>
+      <button class="btn-next-mission" id="btn-start-next-mission">START NEXT DELIVERY ➔</button>
+    </div>
+  </div>
+
+  <!-- Grand Courier Menu Modal ([ESC] / Menu Button) -->
+  <div class="modal-backdrop-full" id="grand-menu-modal">
+    <div class="journal-window">
+      <div class="journal-header">
+        <h2>📜 Port Koriko Courier Headquarters (キキの執務室)</h2>
+        <button class="close-btn-circle" id="btn-close-grand-menu">✕</button>
+      </div>
+      
+      <!-- Modal Navigation Tabs -->
+      <div class="journal-tabs">
+        <button class="tab-btn active" data-tab="tab-academy">🎮 Flight Academy & Controls</button>
+        <button class="tab-btn" data-tab="tab-campaign">📦 Story Deliveries</button>
+        <button class="tab-btn" data-tab="tab-badges">🏆 Badges & Goals</button>
+        <button class="tab-btn" data-tab="tab-attic">🏠 Attic & Workshop</button>
+        <button class="tab-btn" data-tab="tab-sparrows">🕊️ Sparrows & Slalom</button>
+        <button class="tab-btn" data-tab="tab-settings">⚙️ Settings & Audio</button>
+      </div>
+
+      <div class="journal-body">
+        
+        <!-- Tab 1: Flight Academy & Controls Guide for New Players -->
+        <div class="tab-content active" id="tab-academy">
+          <div style="background: #FFE8D6; border-left: 4px solid var(--terracotta-sun); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px;">
+            <h4 style="font-weight: 900; font-size: 13px; color: var(--ink-navy);">📖 Flight Academy: Essential Flight Guide</h4>
+            <p style="font-size: 11.5px; color: var(--ink-muted); line-height: 1.4; margin-top: 2px;">
+              Master the breeze! Use physics-based kinetic momentum, catch chimney smoke updrafts, and skim coastal slipstreams.
+            </p>
+          </div>
+
+          <!-- Interactive Keyboard Controls Diagram -->
+          <div class="controls-keyboard-hero">
+            <h4 style="font-weight: 900; font-size: 12px; color: var(--ink-navy); text-transform: uppercase; letter-spacing: 0.5px;">Flight Controls Reference:</h4>
+            <div class="key-capsules-grid">
+              <div class="key-capsule-card">
+                <span class="key-desc">Pitch (Dive & Lift)</span>
+                <div style="display: flex; gap: 4px;"><span class="key-badge">W</span><span class="key-badge">S</span> / <span class="key-badge">↑</span><span class="key-badge">↓</span></div>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Roll & Bank Turn</span>
+                <div style="display: flex; gap: 4px;"><span class="key-badge">A</span><span class="key-badge">D</span> / <span class="key-badge">←</span><span class="key-badge">→</span></div>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Sparkle Boost</span>
+                <span class="key-badge">SPACE (Hold)</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Airbrake & Touchdown</span>
+                <span class="key-badge">SHIFT</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">360° Barrel Roll Stunt</span>
+                <div style="display: flex; gap: 4px;"><span class="key-badge">Q</span><span class="key-badge">E</span></div>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Toggle Camera POV</span>
+                <span class="key-badge">C</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">360° Camera Free Orbit</span>
+                <span class="key-badge">Mouse Drag</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Adjust Camera Zoom</span>
+                <span class="key-badge">Scroll Wheel</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Photo Mode (Hide UI)</span>
+                <span class="key-badge">P</span>
+              </div>
+              <div class="key-capsule-card">
+                <span class="key-desc">Toggle Courier Menu</span>
+                <span class="key-badge">ESC / TAB</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aerodynamic Maneuver Lessons -->
+          <div class="maneuver-cards-grid" style="margin-top: 4px;">
+            <div class="maneuver-card">
+              <div class="maneuver-icon">🛬</div>
+              <div class="maneuver-info">
+                <h4>Gravity Dive & Lift Conversion</h4>
+                <p>Nose-dive with <strong>[W]</strong> to build kinetic speed up to 80+ KTS, then pull up with <strong>[S]</strong> to convert velocity into soaring altitude!</p>
+              </div>
+            </div>
+            <div class="maneuver-card">
+              <div class="maneuver-icon">🔥</div>
+              <div class="maneuver-info">
+                <h4>Chimney Smoke Updrafts</h4>
+                <p>Fly into rising smoke columns above town villas to catch vertical thermal lift and restore your parcel's Freshness / Warmth meter!</p>
+              </div>
+            </div>
+            <div class="maneuver-card">
+              <div class="maneuver-icon">🌊</div>
+              <div class="maneuver-info">
+                <h4>Coastal Sea Slipstreams</h4>
+                <p>Skim within 2 meters of the sparkling azure ocean surface to engage the ground effect for an effortless 2x speed surge!</p>
+              </div>
+            </div>
+            <div class="maneuver-card">
+              <div class="maneuver-icon">🎈</div>
+              <div class="maneuver-info">
+                <h4>Festival Balloon Pop</h4>
+                <p>Fly through colorful gouache balloons hovering over town to pop them into confetti for +10 Golden Bread Stamps!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Story Deliveries Campaign -->
+        <div class="tab-content" id="tab-campaign" style="display: none;">
+          <p style="font-size: 12px; color: var(--ink-muted); margin-bottom: 6px;">
+            Click on any chapter to set route tracking:
+          </p>
+          <div id="campaign-quest-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- Tab 3: Badges & Goals Achievements -->
+        <div class="tab-content" id="tab-badges" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div>
+              <strong style="font-size: 13px; color: var(--ink-navy);">Courier Achievement Badges</strong>
+              <div style="font-size: 11px; color: var(--ink-muted);">Complete challenges to earn Golden Bread Stamps and level up your Courier License!</div>
+            </div>
+            <div style="font-size: 13px; font-weight: 900; color: var(--terracotta-sun);" id="badges-unlocked-count">0/8 Unlocked</div>
+          </div>
+          <div class="badges-grid" id="badges-container-list"></div>
+        </div>
+
+        <!-- Tab 4: Bakery Attic & Herb Workshop -->
+        <div class="tab-content" id="tab-attic" style="display: none;">
+          <div style="background: #F4EBE1; border-left: 4px solid var(--terracotta-sun); border-radius: 12px; padding: 12px 16px;">
+            <h4 style="font-weight: 800; font-size: 13px; margin-bottom: 3px;">🎬 Homage to Hayao Miyazaki & Studio Ghibli</h4>
+            <p style="font-size: 11.5px; color: var(--ink-muted); line-height: 1.4;">
+              "We depict a free-spirited girl flying through the air, discovering that her magic was inside her heart all along."
+            </p>
+          </div>
+
+          <!-- Attic Window Herb Garden -->
+          <div>
+            <h4 style="font-weight: 800; font-size: 13px; margin-bottom: 6px;">🌱 Window Herb Garden</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+              <div style="background: white; border: 1.5px solid var(--border-parchment); border-radius: 14px; padding: 12px; text-align: center;">
+                <div style="font-size: 24px;">🌿</div>
+                <strong style="font-size: 12px; color: var(--ink-navy);">Breeze Lavender</strong>
+                <p style="font-size: 10.5px; color: var(--ink-muted); margin: 3px 0 6px;">+25% Glide Duration</p>
+                <button class="action-hud-btn" style="margin: 0 auto; background: var(--emerald-hill); color: white; border: none; font-size: 11px; padding: 5px 10px;" id="btn-herb-infusion">Infuse Broom</button>
+              </div>
+              <div style="background: white; border: 1.5px solid var(--border-parchment); border-radius: 14px; padding: 12px; text-align: center;">
+                <div style="font-size: 24px;">🍃</div>
+                <strong style="font-size: 12px; color: var(--ink-navy);">Sunlit Chamomile</strong>
+                <p style="font-size: 10.5px; color: var(--ink-muted); margin: 3px 0 6px;">Warmth Blanket</p>
+                <button class="action-hud-btn" style="margin: 0 auto; background: var(--warm-sand); color: white; border: none; font-size: 11px; padding: 5px 10px;" id="btn-herb-tea">Brew Tea</button>
+              </div>
+              <div style="background: white; border: 1.5px solid var(--border-parchment); border-radius: 14px; padding: 12px; text-align: center;">
+                <div style="font-size: 24px;">🌸</div>
+                <strong style="font-size: 12px; color: var(--ink-navy);">Star Jasmine</strong>
+                <p style="font-size: 10.5px; color: var(--ink-muted); margin: 3px 0 6px;">Sparkle Burst Trail</p>
+                <button class="action-hud-btn" style="margin: 0 auto; background: #9B5DE5; color: white; border: none; font-size: 11px; padding: 5px 10px;" id="btn-herb-jasmine">Scatter Petals</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Broom Workshop -->
+          <div>
+            <h4 style="font-weight: 800; font-size: 13px; margin-bottom: 6px;">🧹 Broom Workshop</h4>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+              <div class="action-hud-btn" id="broom-card-willow" style="flex-direction: column; text-align: center; padding: 10px; background: #FFE8D6; border-color: var(--terracotta-sun);" onclick="selectBroomType('willow')">
+                <span style="font-size: 20px;">🧹</span>
+                <strong style="font-size: 11.5px;">Willow</strong>
+                <span style="font-size: 9.5px; color: var(--terracotta-dark);">High Agility</span>
+              </div>
+              <div class="action-hud-btn" id="broom-card-oak" style="flex-direction: column; text-align: center; padding: 10px;" onclick="selectBroomType('oak')">
+                <span style="font-size: 20px;">🪄</span>
+                <strong style="font-size: 11.5px;">Oak</strong>
+                <span style="font-size: 9.5px; color: var(--ink-muted);">Top Speed</span>
+              </div>
+              <div class="action-hud-btn" id="broom-card-stardust" style="flex-direction: column; text-align: center; padding: 10px;" onclick="selectBroomType('stardust')">
+                <span style="font-size: 20px;">✨</span>
+                <strong style="font-size: 11.5px;">Stardust</strong>
+                <span style="font-size: 9.5px; color: var(--ink-muted);">Long Boost</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 5: Lost Sparrows & Slalom Records -->
+        <div class="tab-content" id="tab-sparrows" style="display: none;">
+          <div style="background: #FFE8D6; border-left: 4px solid var(--terracotta-sun); padding: 12px; border-radius: 12px; margin-bottom: 10px;">
+            <h4 style="font-weight: 800; font-size: 13px; color: var(--ink-navy);">⭕ Aerial Slalom Course & Hidden Sparrows</h4>
+            <p style="font-size: 11.5px; color: var(--ink-muted); margin-top: 3px;">
+              Fly through consecutive golden wind rings for +3s timer extensions and search for the 6 golden origami sparrows.
+            </p>
+          </div>
+
+          <div style="background: white; border: 1.5px solid var(--border-parchment); border-radius: 12px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div>
+              <strong style="font-size: 13px;">Ring Combo Record:</strong>
+              <div style="font-size: 11px; color: var(--ink-muted);">Chain rings continuously without missing.</div>
+            </div>
+            <div style="font-size: 24px; font-weight: 900; color: var(--terracotta-sun);" id="journal-combo-best">0x</div>
+          </div>
+
+          <p style="font-size: 12px; color: var(--ink-muted); margin-bottom: 8px;">
+            Search for 6 hidden golden origami sparrows across Port Koriko:
+          </p>
+          <div class="sparrow-grid" id="sparrow-hints-list"></div>
+        </div>
+
+        <!-- Tab 6: Settings & Audio Controls -->
+        <div class="tab-content" id="tab-settings" style="display: none;">
+          <div style="background: white; border: 1.5px solid var(--border-parchment); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 14px;">
+            
+
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-parchment); padding-top: 12px;">
+              <div>
+                <strong style="font-size: 13px; color: var(--ink-navy);">Procedural Audio & SFX</strong>
+                <div style="font-size: 11px; color: var(--ink-muted);">Dynamic wind synth, pentatonic chimes, and thrust flutter</div>
+              </div>
+              <button class="action-hud-btn" id="btn-menu-audio-toggle" style="padding: 6px 14px;">
+                <span id="menu-audio-label">🔊 Audio: ON</span>
+              </button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-parchment); padding-top: 12px;">
+              <div>
+                <strong style="font-size: 13px; color: var(--ink-navy);">Watercolor Canvas Texture</strong>
+                <div style="font-size: 11px; color: var(--ink-muted);">Ghibli watercolor paper texture & vignette overlay</div>
+              </div>
+              <button class="action-hud-btn" id="btn-toggle-texture" style="padding: 6px 14px;">
+                <span id="texture-label">🎨 Filter: ON</span>
+              </button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-parchment); padding-top: 12px;">
+              <div>
+                <strong style="font-size: 13px; color: var(--ink-navy);">Cinematic Photo Mode</strong>
+                <div style="font-size: 11px; color: var(--ink-muted);">Hide all interface elements for clean wallpaper screenshots</div>
+              </div>
+              <button class="action-hud-btn" id="btn-trigger-photo" style="padding: 6px 14px; background: #E0F2FE;">
+                <span>📸 Enter Photo Mode [P]</span>
+              </button>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-parchment); padding-top: 12px;">
+              <strong style="font-size: 13px; color: var(--ink-navy);">Flight Difficulty:</strong>
+              <div class="difficulty-select-bar" style="margin-top: 6px;">
+                <div class="diff-card-btn selected" id="menu-diff-cozy" onclick="selectDifficulty('cozy')">
+                  <strong>🌸 Cozy</strong>
+                  <div style="font-size: 9.5px; color: var(--ink-muted);">Relaxed Timer</div>
+                </div>
+                <div class="diff-card-btn" id="menu-diff-brisk" onclick="selectDifficulty('brisk')">
+                  <strong>🍃 Brisk</strong>
+                  <div style="font-size: 9.5px; color: var(--ink-muted);">Standard Timer</div>
+                </div>
+                <div class="diff-card-btn" id="menu-diff-gale" onclick="selectDifficulty('gale')">
+                  <strong>⛈️ Gale</strong>
+                  <div style="font-size: 9.5px; color: var(--ink-muted);">Fast • 2.5x 🥖</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ Tab: Wardrobe Shop ══ -->
+        <div class="tab-content" id="tab-wardrobe" style="display: none;">
+
+          <!-- Currency bar -->
+          <div class="shop-currency-bar">
+            <div class="bal-group">
+              <div class="shop-bal-chip">
+                <span class="bal-icon">🥖</span>
+                <div class="bal-stack">
+                  <span class="bal-amount" id="shop-stamps-bal">0</span>
+                  <span class="bal-label">Bread Stamps</span>
+                </div>
+              </div>
+              <div class="shop-bal-chip">
+                <span class="bal-icon">✨</span>
+                <div class="bal-stack">
+                  <span class="bal-amount" id="shop-feathers-bal">0</span>
+                  <span class="bal-label">Gold Feathers</span>
+                </div>
+              </div>
+            </div>
+            <button class="btn-get-feathers" id="btn-open-feathers-store">
+              ✨ Get Feathers
+            </button>
+          </div>
+
+          <!-- Sub-navigation -->
+          <div class="shop-sub-tabs">
+            <button class="shop-sub-tab active" data-shop-tab="shop-characters">🧙 Couriers</button>
+            <button class="shop-sub-tab" data-shop-tab="shop-brooms">🧹 Brooms</button>
+            <button class="shop-sub-tab" data-shop-tab="shop-trails">💫 Trails</button>
+          </div>
+
+          <!-- ── Characters ── -->
+          <div class="shop-section active" id="shop-characters">
+            <div class="shop-grid" id="shop-chars-grid"></div>
+          </div>
+
+          <!-- ── Brooms ── -->
+          <div class="shop-section" id="shop-brooms">
+            <div class="shop-grid" id="shop-brooms-grid"></div>
+          </div>
+
+          <!-- ── Trails ── -->
+          <div class="shop-section" id="shop-trails">
+            <div class="shop-grid" id="shop-trails-grid"></div>
+          </div>
+
+          <!-- Ethical note -->
+          <div style="background:#F4F8FF;border:1.5px solid #C7DCF8;border-radius:12px;padding:12px 16px;margin-top:6px;">
+            <p style="font-size:10.5px;color:#3A5A8A;line-height:1.55;font-weight:600;">
+              🌿 <strong>All cosmetics are purely visual.</strong> Every item can be unlocked with Bread Stamps earned through play — no gameplay advantage is ever sold. Golden Feathers only unlock items faster. This is a demo; no real payment is processed.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Welcome Screen — Full Viewport Cover -->
+  <div id="welcome-screen">
+
+    <!-- Title block -->
+    <div class="ws-title-block">
+      <div class="ws-eyebrow">風の配達便 · Homage to Hayao Miyazaki</div>
+      <div class="ws-game-title">Wind Whisper<br>Courier</div>
+      <div class="ws-subtitle">Fly. Deliver. Soar.</div>
+    </div>
+
+    <!-- CTA Zone -->
+    <div class="ws-cta-zone">
+
+      <!-- Step 1: PLAY button -->
+      <button class="ws-play-btn" id="btn-show-difficulty">
+        ✦ &nbsp; Play
+      </button>
+
+      <!-- Step 2: Difficulty panel (hidden until PLAY clicked) -->
+      <div id="ws-difficulty-panel">
+        <div class="ws-diff-label">Select difficulty</div>
+        <div class="ws-diff-row">
+          <button class="ws-diff-btn selected" id="ws-diff-cozy" onclick="selectDifficulty('cozy'); wsDiffSelect(this)">
+            <span class="diff-icon">🌸</span>
+            <span class="diff-name">Cozy</span>
+            <span class="diff-hint">75 s timer</span>
+          </button>
+          <button class="ws-diff-btn" id="ws-diff-brisk" onclick="selectDifficulty('brisk'); wsDiffSelect(this)">
+            <span class="diff-icon">🍃</span>
+            <span class="diff-name">Brisk</span>
+            <span class="diff-hint">45 s timer</span>
+          </button>
+          <button class="ws-diff-btn" id="ws-diff-gale" onclick="selectDifficulty('gale'); wsDiffSelect(this)">
+            <span class="diff-icon">⛈️</span>
+            <span class="diff-name">Gale</span>
+            <span class="diff-hint">28 s · 2.5× 🥖</span>
+          </button>
+        </div>
+        <button class="ws-launch-btn" id="btn-start-game">Take Flight 飛ぼう！</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       THREE.JS ENGINE & GAME ARCHITECTURE JAVASCRIPT
+       ========================================================================== -->
+
+  <!-- ══ Shop: Item Purchase Confirm Modal ══ -->
+  <div id="shop-confirm-modal">
+    <div class="shop-confirm-card">
+      <div class="confirm-art" id="confirm-art">🧙</div>
+      <div class="confirm-title" id="confirm-title">Unlock Courier</div>
+      <div class="confirm-sub" id="confirm-sub">Add this courier to your wardrobe?</div>
+      <div class="confirm-price-tag" id="confirm-price-tag">
+        <span id="confirm-price-icon">🥖</span>
+        <span id="confirm-price-val">300</span>
+      </div>
+      <div class="confirm-disclaimer">
+        Cosmetic only — zero gameplay advantage. Earn Bread Stamps by playing!
+      </div>
+      <div class="confirm-btns">
+        <button class="btn-confirm-cancel" id="btn-confirm-cancel">Cancel</button>
+        <button class="btn-confirm-buy" id="btn-confirm-buy">Unlock ✦</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Shop: Get Golden Feathers Store Modal ══ -->
+  <div id="feathers-store-modal">
+    <div class="feathers-store-card">
+      <button class="fstore-close" id="btn-close-fstore">✕</button>
+      <div class="fstore-header">
+        <div class="fstore-title">✨ Golden Feathers</div>
+        <div class="fstore-sub">Support the game and unlock premium cosmetics.<br>Every purchase is optional — you can earn everything by playing!</div>
+      </div>
+      <div class="fstore-bundles">
+        <div class="fstore-bundle" data-feathers="80" data-price="0.99" data-name="Starter Pouch">
+          <div class="bundle-icon">🪙</div>
+          <div class="bundle-feathers">✨ 80</div>
+          <div class="bundle-name">Starter Pouch</div>
+          <div class="bundle-price">$0.99</div>
+        </div>
+        <div class="fstore-bundle" data-feathers="250" data-price="2.99" data-name="Courier Pack">
+          <div class="bundle-icon">📦</div>
+          <div class="bundle-feathers">✨ 250</div>
+          <div class="bundle-name">Courier Pack</div>
+          <div class="bundle-price">$2.99</div>
+        </div>
+        <div class="fstore-bundle best-value" data-feathers="650" data-price="6.99" data-name="Ace Witch Bundle">
+          <div class="best-tag">⭐ BEST VALUE</div>
+          <div class="bundle-icon">🧙</div>
+          <div class="bundle-feathers">✨ 650</div>
+          <div class="bundle-name">Ace Witch Bundle</div>
+          <div class="bundle-price">$6.99</div>
+        </div>
+        <div class="fstore-bundle" data-feathers="1500" data-price="14.99" data-name="Grand Courier Chest">
+          <div class="bundle-icon">🏆</div>
+          <div class="bundle-feathers">✨ 1500</div>
+          <div class="bundle-name">Grand Courier Chest</div>
+          <div class="bundle-price">$14.99</div>
+        </div>
+      </div>
+      <div class="fstore-disclaimer">
+        This is a simulation — no real payment is processed. All prices are example IAP tiers.<br>
+        You can also exchange 200 Bread Stamps → 1 Golden Feather in the game.
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Shop: Success Toast ══ -->
+  <div class="shop-success-toast" id="shop-success-toast">✅ Added to Wardrobe!</div>
+
+  <!-- Modular JavaScript Engine & Gameplay Modules -->
+  <script src="js/audio.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/character.js"></script>
+  <script src="js/flight.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
