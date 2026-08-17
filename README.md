@@ -90,7 +90,7 @@ Every item in the premium tier can also be earned through enough gameplay. Purch
 **Kill / pivot if:** Average session completes fewer than 1 delivery, or mobile bounce is above 60% before first flight.
 
 **Numbers to watch at soft launch:**
-- **Downloads** — the primary number I'd watch
+- **Unique plays** — the primary number I'd watch (browser game, no app store)
 - **D1 Retention** — do players come back the next day? This tells you if the loop has real pull
 - **Session length** — are players staying long enough to complete more than one chapter?
 
@@ -100,9 +100,12 @@ Every item in the premium tier can also be earned through enough gameplay. Purch
 
 **What did you play, what did you borrow, and what did you do differently?**
 
-**Reference:** Kiki's Delivery Service (Miyazaki, 1989) — the primary inspiration. The warmth mechanic, chimney updrafts, named NPC recipients, and the coastal town map are all directly drawn from the film.
+**Inspiration:** Kiki's Delivery Service (Miyazaki, 1989). The warmth mechanic, chimney updrafts, named NPC recipients, and coastal town are all drawn from the film. That's the only reference used.
 
-**The game itself is a unique concept and idea.** There is no other 3D browser game built on this specific fantasy — a witch courier keeping warm food alive mid-flight across a Ghibli-style archipelago, with physics-driven warmth as the central tension mechanic
+**Closest competitor:** Mika and the Witch's Mountain — witch, broomstick, package delivery, coastal island, Kiki DNA. The overlap is coincidental; Mika was not referenced or played during development. It's also a $19.99 download on Steam/Switch/PS/Xbox.
+
+**What's different:** Wind Whisper Courier runs in a browser — no install, no cost. The warmth mechanic adds a routing puzzle that Mika doesn't have: fly fast and the parcel cools, find chimney updrafts or fail the delivery.
+
 ---
 
 <div align="center">
