@@ -128,15 +128,32 @@
       if (e.code === 'KeyP') togglePhotoMode();
       if (e.code === 'Escape' || e.code === 'Tab') {
         e.preventDefault();
-        toggleGrandMenuModal();
+        if (typeof toggleGrandMenuModal === 'function') toggleGrandMenuModal();
+        else if (window.toggleGrandMenuModal) window.toggleGrandMenuModal();
       }
-      if (e.code === 'KeyM' || e.code === 'KeyJ') toggleGrandMenuModal();
+      if (e.code === 'KeyM' || e.code === 'KeyJ') {
+        if (typeof toggleGrandMenuModal === 'function') toggleGrandMenuModal();
+        else if (window.toggleGrandMenuModal) window.toggleGrandMenuModal();
+      }
       if (e.code === 'KeyB') {
         if (window.openWardrobeShop) window.openWardrobeShop();
       }
       if (e.code === 'KeyQ') triggerBarrelRoll(-1);
       if (e.code === 'KeyE') triggerBarrelRoll(1);
-      if (e.code === 'Space' && flight.state === 'pickup') launchFromGround();
+      if (e.code === 'Space') {
+        // If welcome screen is open, dismiss it and launch
+        const ws = document.getElementById('welcome-screen');
+        if (ws && ws.style.display !== 'none' && window.getComputedStyle(ws).display !== 'none' && parseFloat(window.getComputedStyle(ws).opacity || '1') > 0.05) {
+          ws.style.opacity = '0';
+          setTimeout(() => { ws.style.display = 'none'; }, 600);
+          sound.init();
+          sound.playUpdraft();
+        }
+        if (flight.state === 'pickup') {
+          if (typeof launchFromGround === 'function') launchFromGround();
+          else if (window.launchFromGround) window.launchFromGround();
+        }
+      }
       sound.init();
     });
     window.addEventListener('keyup', e => { keys[e.code] = false; });
@@ -149,7 +166,12 @@
         togglePhotoMode();
         return;
       }
-      if (e.target.closest('.interactive') || e.target.closest('.modal-backdrop-full') || e.target.closest('#welcome-screen')) return;
+      if (e.target.closest('.interactive') || 
+          e.target.closest('.modal-backdrop-full') || 
+          e.target.closest('#welcome-screen') || 
+          e.target.closest('#pickup-action-banner') || 
+          e.target.closest('button') || 
+          e.target.closest('.action-hud-btn')) return;
       isDragging = true;
       prevMouseX = e.clientX;
       prevMouseY = e.clientY;
@@ -178,64 +200,120 @@
     const mobileThumb = document.getElementById('mobile-thumb');
     let joyOrigin = null;
 
-    mobileJoy.addEventListener('touchstart', e => {
-      const rect = mobileJoy.getBoundingClientRect();
-      joyOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-      sound.init();
-    }, { passive: true });
+    if (mobileJoy && mobileThumb) {
+      mobileJoy.addEventListener('touchstart', e => {
+        const rect = mobileJoy.getBoundingClientRect();
+        joyOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        sound.init();
+      }, { passive: true });
 
-    mobileJoy.addEventListener('touchmove', e => {
-      if (!joyOrigin) return;
-      const touch = e.touches[0];
-      const dx = touch.clientX - joyOrigin.x;
-      const dy = touch.clientY - joyOrigin.y;
-      const dist = Math.min(48, Math.hypot(dx, dy));
-      const angle = Math.atan2(dy, dx);
+      mobileJoy.addEventListener('touchmove', e => {
+        if (!joyOrigin) return;
+        const touch = e.touches[0];
+        const dx = touch.clientX - joyOrigin.x;
+        const dy = touch.clientY - joyOrigin.y;
+        const dist = Math.min(48, Math.hypot(dx, dy));
+        const angle = Math.atan2(dy, dx);
 
-      mobileThumb.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`;
-      flight.yawInput = -Math.cos(angle) * (dist / 48);
-      flight.pitchInput = -Math.sin(angle) * (dist / 48);
-    }, { passive: true });
+        mobileThumb.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`;
+        flight.yawInput = -Math.cos(angle) * (dist / 48);
+        flight.pitchInput = -Math.sin(angle) * (dist / 48);
+      }, { passive: true });
 
-    mobileJoy.addEventListener('touchend', () => {
-      joyOrigin = null;
-      mobileThumb.style.transform = 'translate(0, 0)';
-      flight.yawInput = 0;
-      flight.pitchInput = 0;
-    });
+      mobileJoy.addEventListener('touchend', () => {
+        joyOrigin = null;
+        mobileThumb.style.transform = 'translate(0, 0)';
+        flight.yawInput = 0;
+        flight.pitchInput = 0;
+      });
+    }
 
     const btnPropel = document.getElementById('btn-propel');
     const btnAirbrake = document.getElementById('btn-airbrake');
     const btnToggleCam = document.getElementById('btn-toggle-cam');
     const btnMountLaunch = document.getElementById('btn-mount-launch');
 
-    btnMountLaunch.addEventListener('click', launchFromGround);
+    // Central Mount Broom & Launch Button
+    if (btnMountLaunch) {
+      const handleMountClick = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        sound.init();
+        if (typeof launchFromGround === 'function') {
+          launchFromGround();
+        } else if (window.launchFromGround) {
+          window.launchFromGround();
+        }
+      };
+      btnMountLaunch.addEventListener('click', handleMountClick);
+      btnMountLaunch.addEventListener('mousedown', (e) => { e.stopPropagation(); });
+      btnMountLaunch.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: true });
+    }
 
-    btnPropel.addEventListener('mousedown', () => { 
-      if (flight.state === 'pickup') { launchFromGround(); } else { flight.isThrusting = true; }
-    });
-    btnPropel.addEventListener('mouseup', () => { flight.isThrusting = false; });
-    btnPropel.addEventListener('touchstart', (e) => { 
-      e.preventDefault(); 
-      if (flight.state === 'pickup') { launchFromGround(); } else { flight.isThrusting = true; }
-    });
-    btnPropel.addEventListener('touchend', () => { flight.isThrusting = false; });
+    // Propel / Boost / Launch Button
+    if (btnPropel) {
+      const handlePropelPress = (e) => {
+        if (e) e.preventDefault();
+        sound.init();
+        if (flight.state === 'pickup') {
+          if (typeof launchFromGround === 'function') {
+            launchFromGround();
+          } else if (window.launchFromGround) {
+            window.launchFromGround();
+          }
+        } else {
+          flight.isThrusting = true;
+        }
+      };
+      const handlePropelRelease = (e) => {
+        if (e) e.preventDefault();
+        flight.isThrusting = false;
+      };
 
-    btnAirbrake.addEventListener('mousedown', () => { 
-      flight.isBraking = true; 
-      sound.playBrake(); 
-      checkProximityLanding();
-    });
-    btnAirbrake.addEventListener('mouseup', () => { flight.isBraking = false; });
-    btnAirbrake.addEventListener('touchstart', (e) => { 
-      e.preventDefault(); 
-      flight.isBraking = true; 
-      sound.playBrake(); 
-      checkProximityLanding();
-    });
-    btnAirbrake.addEventListener('touchend', () => { flight.isBraking = false; });
+      btnPropel.addEventListener('mousedown', handlePropelPress);
+      btnPropel.addEventListener('mouseup', handlePropelRelease);
+      btnPropel.addEventListener('touchstart', handlePropelPress, { passive: false });
+      btnPropel.addEventListener('touchend', handlePropelRelease);
+      btnPropel.addEventListener('click', (e) => {
+        if (flight.state === 'pickup') handlePropelPress(e);
+      });
+    }
 
-    btnToggleCam.addEventListener('click', toggleCameraMode);
+    // Airbrake & Land Button
+    if (btnAirbrake) {
+      const handleBrakePress = (e) => {
+        if (e) e.preventDefault();
+        sound.init();
+        flight.isBraking = true;
+        sound.playBrake();
+        if (typeof checkProximityLanding === 'function') {
+          checkProximityLanding();
+        } else if (window.checkProximityLanding) {
+          window.checkProximityLanding();
+        }
+      };
+      const handleBrakeRelease = (e) => {
+        if (e) e.preventDefault();
+        flight.isBraking = false;
+      };
+
+      btnAirbrake.addEventListener('mousedown', handleBrakePress);
+      btnAirbrake.addEventListener('mouseup', handleBrakeRelease);
+      btnAirbrake.addEventListener('touchstart', handleBrakePress, { passive: false });
+      btnAirbrake.addEventListener('touchend', handleBrakeRelease);
+    }
+
+    if (btnToggleCam) {
+      btnToggleCam.addEventListener('click', (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        toggleCameraMode();
+      });
+    }
 
     function triggerBarrelRoll(direction = 1) {
       if (flight.isBarrelRolling || flight.state !== 'flying') return;
@@ -246,23 +324,26 @@
       flight.stuntsCount++;
       sound.playBarrelRoll();
 
-      checkBadgeUnlock('acrobat');
+      if (typeof checkBadgeUnlock === 'function') checkBadgeUnlock('acrobat');
+      else if (window.checkBadgeUnlock) window.checkBadgeUnlock('acrobat');
 
       const announcer = document.getElementById('stunt-announcer');
-      announcer.textContent = 'BARREL ROLL! ✨';
-      announcer.classList.add('pop');
-      setTimeout(() => announcer.classList.remove('pop'), 800);
+      if (announcer) {
+        announcer.textContent = 'BARREL ROLL! ✨';
+        announcer.classList.add('pop');
+        setTimeout(() => announcer.classList.remove('pop'), 800);
+      }
     }
 
     function toggleCameraMode() {
       camRig.mode = camRig.mode === 'third_person' ? 'first_person' : 'third_person';
       const fpV = document.getElementById('fp-vignette');
       if (camRig.mode === 'first_person') {
-        fpV.classList.add('active');
-        kikiGroup.visible = false;
+        if (fpV) fpV.classList.add('active');
+        if (typeof kikiGroup !== 'undefined') kikiGroup.visible = false;
       } else {
-        fpV.classList.remove('active');
-        kikiGroup.visible = true;
+        if (fpV) fpV.classList.remove('active');
+        if (typeof kikiGroup !== 'undefined') kikiGroup.visible = true;
       }
     }
 
@@ -271,10 +352,14 @@
       const ui = document.getElementById('ui-layer');
       const photoInd = document.getElementById('photo-mode-indicator');
       if (flight.isPhotoMode) {
-        ui.style.opacity = '0';
-        photoInd.style.display = 'flex';
+        if (ui) ui.style.opacity = '0';
+        if (photoInd) photoInd.style.display = 'flex';
       } else {
-        ui.style.opacity = '1';
-        photoInd.style.display = 'none';
+        if (ui) ui.style.opacity = '1';
+        if (photoInd) photoInd.style.display = 'none';
       }
     }
+
+    window.toggleCameraMode = toggleCameraMode;
+    window.togglePhotoMode = togglePhotoMode;
+    window.triggerBarrelRoll = triggerBarrelRoll;

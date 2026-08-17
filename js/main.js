@@ -459,6 +459,15 @@
       hudSpeed.textContent = Math.round(flight.speed * 1.85);
       hudAlt.textContent = `ALT ${Math.round(flight.position.y)}m`;
 
+      const propelTxt = document.querySelector('#btn-propel span');
+      if (propelTxt) {
+        if (flight.state === 'pickup') {
+          if (propelTxt.textContent !== '🚀 Launch') propelTxt.textContent = '🚀 Launch';
+        } else {
+          if (propelTxt.textContent !== '✨ Boost') propelTxt.textContent = '✨ Boost';
+        }
+      }
+
       let buffHTML = '';
       if (flight.currentRingCombo > 0) buffHTML += `<div class="buff-pill combo">⭕ ${flight.currentRingCombo}x Ring Combo</div>`;
       if (flight.isBarrelRolling) buffHTML += `<div class="buff-pill">✨ Barrel Roll</div>`;

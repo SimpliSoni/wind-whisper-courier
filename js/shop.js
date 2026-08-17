@@ -129,6 +129,7 @@
       const item = SHOP_ITEMS[category].find(i => i.id === id);
       shopShowSuccess(`✔ ${item.name} equipped!`);
     }
+    window.shopEquip = shopEquip;
 
     function shopBuyConfirm(category, id) {
       const item = SHOP_ITEMS[category].find(i => i.id === id);

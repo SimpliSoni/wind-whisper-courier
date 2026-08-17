@@ -512,6 +512,7 @@
       document.querySelectorAll('.ws-diff-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
     }
+    window.wsDiffSelect = wsDiffSelect;
 
     document.getElementById('btn-show-difficulty').addEventListener('click', function () {
       this.style.display = 'none';
@@ -520,9 +521,20 @@
 
     document.getElementById('btn-start-game').addEventListener('click', () => {
       const ws = document.getElementById('welcome-screen');
-      ws.style.opacity = '0';
-      setTimeout(() => { ws.style.display = 'none'; }, 600);
+      if (ws) {
+        ws.style.opacity = '0';
+        setTimeout(() => { ws.style.display = 'none'; }, 600);
+      }
       sound.init();
       sound.playUpdraft();
       launchFromGround();
     });
+
+    // Expose all primary game loop/control helpers to window
+    window.launchFromGround = launchFromGround;
+    window.checkProximityLanding = checkProximityLanding;
+    window.checkBadgeUnlock = checkBadgeUnlock;
+    window.toggleGrandMenuModal = toggleGrandMenuModal;
+    window.spawnFloatingText = spawnFloatingText;
+    window.setQuest = setQuest;
+    window.executeTouchdown = executeTouchdown;
