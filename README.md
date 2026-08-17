@@ -102,8 +102,7 @@ Every item in the premium tier can also be earned through enough gameplay. Purch
 
 **Reference:** Kiki's Delivery Service (Miyazaki, 1989) — the primary inspiration. The warmth mechanic, chimney updrafts, named NPC recipients, and the coastal town map are all directly drawn from the film.
 
-**The game itself is a unique concept and idea.** There is no other 3D browser game built on this specific fantasy — a witch courier keeping warm food alive mid-flight across a Ghibli-style archipelago, with physics-driven warmth as the central tension mechanic. Built in Three.js (not Unity WebGL), it loads in under 3 seconds with no install and no splash screen.
-
+**The game itself is a unique concept and idea.** There is no other 3D browser game built on this specific fantasy — a witch courier keeping warm food alive mid-flight across a Ghibli-style archipelago, with physics-driven warmth as the central tension mechanic
 ---
 
 <div align="center">
